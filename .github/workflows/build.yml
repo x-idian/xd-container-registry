@@ -3,8 +3,14 @@ name: Build Docker Images
 on:
   push:
     branches: [master]
+    paths:
+      - '**.dockerfile'
+      - 'Dockerfile'
   pull_request:
     branches: [master]
+    paths:
+      - '**.dockerfile'
+      - 'Dockerfile'
   workflow_dispatch:
     inputs:
       force_rebuild:
@@ -24,13 +30,19 @@ jobs:
       dockerfiles: ${{ steps.changes.outputs.dockerfiles }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - id: changes
         run: |
           if [[ "${{ github.event_name }}" == "workflow_dispatch" ]] && [[ "${{ inputs.force_rebuild }}" == "true" ]]; then
             echo "dockerfiles=$(find . -name '*.dockerfile' -not -path './.git/*' | jq -R -s -c 'split("\n") | map(select(length > 0))')" >> $GITHUB_OUTPUT
+          elif [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            # For PRs, compare against the base branch
+            echo "dockerfiles=$(git diff --name-only origin/${{ github.event.pull_request.base.ref }} HEAD -- '*.dockerfile' 'Dockerfile' | jq -R -s -c 'split("\n") | map(select(length > 0))')" >> $GITHUB_OUTPUT
           else
-            echo "dockerfiles=$(git diff --name-only HEAD~1 origin/master HEAD -- '*.dockerfile' 'Dockerfile' | jq -R -s -c 'split("\n") | map(select(length > 0))')" >> $GITHUB_OUTPUT
+            # For push events
+            echo "dockerfiles=$(git diff --name-only origin/master HEAD -- '*.dockerfile' 'Dockerfile' | jq -R -s -c 'split("\n") | map(select(length > 0))')" >> $GITHUB_OUTPUT
           fi
 
   build:
