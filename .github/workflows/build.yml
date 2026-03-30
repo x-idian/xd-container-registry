@@ -46,7 +46,11 @@ jobs:
       - name: Extract image name and tag
         id: image
         run: |
+          echo "DEBUG matrix.dockerfile: '${{ matrix.dockerfile }}'"
           DOCKERFILE="${{ matrix.dockerfile }}"
+          if [ -z "$DOCKERFILE" ]; then
+            DOCKERFILE="Dockerfile"
+          fi
           NAME="${DOCKERFILE#./}"
           NAME="${NAME%.dockerfile}"
           NAME="${NAME//\//-}"
@@ -55,6 +59,7 @@ jobs:
           echo "name=$NAME" >> $GITHUB_OUTPUT
           echo "tag=$TAG" >> $GITHUB_OUTPUT
           echo "full_image=$FULL_IMAGE" >> $GITHUB_OUTPUT
+          echo "dockerfile=$DOCKERFILE" >> $GITHUB_OUTPUT
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -73,4 +78,4 @@ jobs:
           context: .
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.image.outputs.full_image }}
-          dockerfile: ${{ matrix.dockerfile }}
+          dockerfile: ${{ steps.image.outputs.dockerfile }}
