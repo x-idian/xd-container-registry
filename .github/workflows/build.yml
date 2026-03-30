@@ -49,6 +49,7 @@ jobs:
           DOCKERFILE="${{ matrix.dockerfile }}"
           NAME="${DOCKERFILE#./}"
           NAME="${NAME%.dockerfile}"
+          NAME="${NAME//\//-}"
           TAG=$(date +%Y-%m-%d).${{ github.run_number }}
           FULL_IMAGE="${{ env.REGISTRY }}/${{ env.OWNER }}/${NAME}:${TAG}"
           echo "name=$NAME" >> $GITHUB_OUTPUT
