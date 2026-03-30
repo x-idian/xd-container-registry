@@ -36,6 +36,9 @@ jobs:
   build:
     needs: detect-changes
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
     if: needs.detect-changes.outputs.dockerfiles != '[]'
     strategy:
       matrix:
