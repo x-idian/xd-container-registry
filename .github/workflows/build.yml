@@ -47,7 +47,7 @@ jobs:
         id: image
         run: |
           DOCKERFILE="${{ matrix.dockerfile }}"
-          NAME="${DOCKERFILE#.}"
+          NAME="${DOCKERFILE#./}"
           NAME="${NAME%.dockerfile}"
           TAG=$(date +%Y-%m-%d).${{ github.run_number }}
           FULL_IMAGE="${{ env.REGISTRY }}/${{ env.OWNER }}/${NAME}:${TAG}"
