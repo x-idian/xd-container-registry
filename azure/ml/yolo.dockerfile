@@ -2,4 +2,4 @@ FROM mcr.microsoft.com/azureml/minimal-py312-inference:latest
 
 RUN pip install numpy pip ultralytics~=8.4.31
 
-ENV GUNICORN_CMD_ARGS="--no-control-socket"
+ENV GUNICORN_SOCKET_PATH=""
