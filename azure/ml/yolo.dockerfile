@@ -1,21 +1,14 @@
-FROM python:3.12-slim as builder
+FROM mcr.microsoft.com/azureml/minimal-py312-inference:latest
 
-WORKDIR /app
+USER root
 
-ENV PYTHONDONTWRITEBYTECODE 1
-ENV PYTHONUNBUFFERED 1
+RUN apt-get update -y && apt-get install -y libxcb1
 
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends gcc
+USER dockeruser
 
-RUN pip wheel --no-cache-dir --no-deps --wheel-dir /app/wheels ultralytics~=8.4.31 azureml-inference-server-http~=1.5.1
+ENV PYTHONUNBUFFERED=1
+ENV PYTHONDONTWRITEBYTECODE=1
 
-
-# final stage
-FROM python:3.12-slim
-
-WORKDIR /app
-
-COPY --from=builder /app/wheels /wheels
-
-RUN pip install --no-cache /wheels/*
+RUN --mount=type=cache,target=/home/dockeruser/.cache/pip,uid=1000,gid=1000 pip install azureml-inference-server-http==1.5.1 'gunicorn<25.1' opencv-python-headless~=4.6.0 &&\
+    pip install torch==2.11.0 torchvision==0.26.0 --index-url https://download.pytorch.org/whl/cpu &&\
+    pip install ultralytics==8.4.31  --no-deps
